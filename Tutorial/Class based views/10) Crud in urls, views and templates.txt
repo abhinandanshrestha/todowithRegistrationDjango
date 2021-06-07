@@ -1,0 +1,92 @@
+1) in views.py
+
+from django.shortcuts import render
+from django.views.generic.list import ListView
+from django.views.generic.detail import DetailView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.urls import reverse_lazy
+
+from .models import Task
+# Create your views here.
+
+class TaskList(ListView): #by default looks for templates/base/task_list.html
+	model = Task 
+	context_object_name = 'tasks'
+
+class TaskDetail(DetailView): #by default looks for templates/base/task_detail.html
+	model = Task
+	context_object_name = 'task'
+	template_name ='base/task.html'
+
+class TaskCreate(CreateView): #by default looks for templates/base/task_form.html
+	model = Task
+	fields = '__all__' #fires all the modelForms
+	success_url = reverse_lazy('tasks') #after success re-directs to url 'tasks'
+
+class TaskUpdate(UpdateView): #by default looks for templates/base/task_form.html
+	model = Task
+	fields = '__all__' #fires all the modelForms
+	success_url = reverse_lazy('tasks') #after success re-directs to url 'tasks'
+
+class TaskDelete(DeleteView): #by default looks for templates/base/task_confirm_delete.html
+	model = Task
+	context_object_name = 'task'
+	success_url = reverse_lazy('tasks')
+
+2) in urls.py
+
+from django.urls import path
+from .views import TaskList, TaskDetail, TaskCreate, TaskUpdate, TaskDelete
+
+urlpatterns = [
+	path('', TaskList.as_view(), name='tasks'),
+	path('task/<int:pk>/',TaskDetail.as_view(),name='task'),
+	path('create-task/',TaskCreate.as_view(),name='create-task'),
+	path('update-task/<int:pk>',TaskUpdate.as_view(),name='update-task'),
+	path('delete-task/<int:pk>',TaskDelete.as_view(),name='delete-task'),
+	
+]
+
+3) task_confirm_delete.html looks like
+
+<a href="{% url 'tasks' %}">Go back</a>
+<form method="POST">
+	{% csrf_token %}
+	<p>Are you sure you want to delete this task? "{{task}}"</p>
+	<input type="submit" value="delete">
+</form>
+
+4) task_form.html 
+
+<h3>TaskForm</h3>
+<a href="{% url 'tasks' %}">Go back</a>
+<form method="POST" action="">
+	{% csrf_token %}
+	{{form.as_p}}
+	<input type="submit" value="Submit">
+</form>
+
+5) task_list.html
+
+<h1>My To do List</h1>
+
+<a href="{% url 'create-task' %}">Add Task</a>
+
+<table>
+	<tr>
+		<th>Item</th>
+		<th></th>
+		<th></th>
+		<th></th>
+	</tr>
+	{% for task in object_list %}
+		<tr>
+			<td>{{task.title}}</td>
+			<td><a href="{% url 'task' task.id %}">View</td>
+			<td><a href="{% url 'update-task' task.id %}">Edit</td>
+			<td><a href="{% url 'delete-task' task.id %}">Delete</td>
+		</tr>
+		{% empty %}
+		<h3>No items in the list</h3>
+	{% endfor %}
+</table>
