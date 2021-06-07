@@ -1,0 +1,76 @@
+Templates in django has the following format:
+
+        Project
+            -App
+                -templates
+                    -App
+                        -example.html
+
+        eg:
+
+        Mainsite(Project Folder)
+            -todo
+                -templates
+                    -todo
+                        -list.html
+
+
+
+Database Models:
+
+1) inside Project/App/models.py (mainsite/todo/models.py)
+
+from django.db import models
+
+# Create your models here.
+class Task(models.Model):
+	title = models.CharField(max_length=200)
+	completed = models.BooleanField(default=False)
+	created_at = models.DateTimeField(auto_now_add=True)
+
+	def __str__(self):
+		return self.title
+
+2) run command as:
+
+python manage.py makemigrations <app>
+python manage.py makemigrations todo
+python manage.py migrate
+
+3) inside admin.py
+from django.contrib import admin
+from .models import Task
+
+# Register your models here.
+
+admin.site.register(Task)
+
+4) python manage.py createsuperuser
+enter username, password, email details
+login to localhost:8000/admin
+
+5) we can use manage.py shell as
+
+python manage.py shell
+
+
+
+If we want user authentication system 
+
+#####################################################################
+from django.db import models
+from django.contrib.auth.models import User #this extra line is added 
+# Create your models here.
+
+class Task(models.Model):
+	user= models.ForeignKey(User,on_delete=models.CASCADE,null=True,blank=True) #one to many relationship as we use one user have all the relations with next items in the database
+	title= models.CharField(max_length=200)
+	description= models.TextField(null=True,blank=True)
+	complete= models.BooleanField(default=False)
+	created= models.DateTimeField(auto_now_add=True)
+
+	def __str__(self):
+		return self.title
+
+	class Meta:
+		ordering = ['complete'] ##automatically sends completed items to the bottom

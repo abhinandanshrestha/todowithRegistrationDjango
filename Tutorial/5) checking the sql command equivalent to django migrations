@@ -1,0 +1,2 @@
+python manage.py sqlmigrate todo 0001
+python manage.py sqlmigrate <AppName> 0001

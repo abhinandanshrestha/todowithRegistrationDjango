@@ -1,0 +1,23 @@
+1) We have app based static files Tree as
+		<Project Name>
+		  	-<AppName>
+				-static
+					-<App Name>
+						-css
+							-example.css
+
+2) We have global static files Tree as
+	<Project>
+		-static
+				-css
+					-example.css
+
+By default Django doesn't search for the global static file so we have to register in settings.py (add this line to the bottom)
+
+import os 
+
+STATICFILES_DIRS =[
+    os.path.join(BASE_DIR,'static')
+]
+
+

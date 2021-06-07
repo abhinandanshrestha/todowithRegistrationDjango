@@ -1,0 +1,11 @@
+To start django in virtual environment: 
+    mkdir <project>
+    cd <project>
+    python -m venv myvenv
+    myvenv\Scripts\activate
+
+to start djangoProject:
+    django-admin startproject <project>
+
+to start djangoApp:
+    python manage.py startapp <appName>

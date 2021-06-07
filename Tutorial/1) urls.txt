@@ -1,0 +1,42 @@
+1) inside urls.py of mainsite(Project):
+
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    paht('',include('todo.urls'))   //    127.0.0.1:8000/  path is redirected to 
+    path('admin/', admin.site.urls),
+]
+
+
+2) inside urls.py of todo(App): 
+
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.index,name='index'),
+]
+
+
+3) inside views.py of todo(App):
+
+from django.shortcuts import render
+from django.http import HttpResponse
+
+# Create your views here.
+
+def index(request):
+	return HttpResponse('hello world')
+
+4) register app in the settings.py in mainsite(project folder):
+
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'todo' /* todo is app name */
+]

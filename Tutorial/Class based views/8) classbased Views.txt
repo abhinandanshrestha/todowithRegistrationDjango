@@ -1,0 +1,27 @@
+https://www.dennisivy.com/post/django-class-based-views/  #reference
+
+from django.shortcuts import render
+from .models import Product
+
+def productsList(request):
+	products = Product.objects.all()
+	
+	if request.method == 'POST':
+  		Product.object.create()
+	
+	context = {'products':products}
+	return render(request, 'base/product_list.html', context)
+
+
+
+########## Turns into #################
+
+from django.views.generic.list import ListView
+from .models import Product 
+
+class ProductList(ListView):
+	model = Product
+
+	def post(self, request):
+		Product.object.create()
+

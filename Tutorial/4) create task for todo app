@@ -1,0 +1,85 @@
+1) create forms.py in the todo>forms.py
+
+from django import forms
+from django.forms import ModelForm 
+
+class TaskForm(forms.ModelForm):
+    class Meta:
+        model = Task
+        fields = '__all__'
+
+2) now access TaskForm object in todo>views.py
+
+from django.shortcuts import render, redirect
+from django.http import HttpResponse
+from .models import Task
+from .forms import TaskForm
+# Create your views here.
+
+def index(request):
+	#tasks is from models.py
+	tasks = Task.objects.all()
+
+	#form is object of TaskForm from forms.py 
+	form = TaskForm() 
+
+	#pass the context to templates as dictionary
+	context = {'tasks': tasks,'form':form}
+
+	return render(request,'todo/list.html',context)
+
+
+3) create form in list.html
+
+<h1>TODO APP</h1>
+
+<form method="POST" action="/"> //since action is '/', in urls.py we have views.index so check views.py(2)
+	{{form.title}}
+	{% csrf_token %}
+	<input type="submit" name="create-task">
+</form>
+
+{% for task in tasks %}
+	<div>
+		<p>{{ task }}</p>
+	</div>
+{% endfor %}
+
+4) check urls.py
+
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.index,name='index'),
+]
+
+5) check for "POST" in views.py
+
+from django.shortcuts import render, redirect
+from django.http import HttpResponse
+from .models import Task
+from .forms import TaskForm
+# Create your views here.
+
+def index(request):
+	#tasks is from models.py
+	tasks = Task.objects.all()
+
+	#form is object of TaskForm from forms.py 
+	form = TaskForm() 
+
+	####check if the form action="/" has valid data or not to post it in the server 
+	if request.method=='POST':
+		form = TaskForm(request.POST)
+		if form.is_valid():
+			form.save()
+		return redirect('/')
+
+	##############################
+
+	#pass the context to templates as dictionary
+	context = {'tasks': tasks,'form':form}
+
+	return render(request,'todo/list.html',context)
+
