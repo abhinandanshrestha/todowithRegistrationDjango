@@ -1,0 +1,139 @@
+Reference: http://ccbv.co.uk/
+
+1) views.py
+
+from django.shortcuts import render
+from django.views.generic.list import ListView
+from django.views.generic.detail import DetailView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.urls import reverse_lazy
+
+
+from django.contrib.auth.views import LoginView ###this is used to login
+
+from django.contrib.auth.mixins import LoginRequiredMixin   ###this is used to login-required for creating, updating, deleting and viewing tasks
+
+from .models import Task
+# Create your views here.
+
+class CustomLoginView(LoginView):
+	template_name = 'base/login.html'
+	fields = '__all__'
+	redirect_authenticated_user = True
+
+	def get_success_url(self):
+		return reverse_lazy('tasks')
+
+class TaskList(LoginRequiredMixin, ListView): #by default looks for templates/base/task_list.html
+	model = Task 
+	context_object_name = 'tasks'
+
+class TaskDetail(LoginRequiredMixin, DetailView): #by default looks for templates/base/task_detail.html
+	model = Task
+	context_object_name = 'task'
+	template_name ='base/task.html'
+
+class TaskCreate(LoginRequiredMixin, CreateView): #by default looks for templates/base/task_form.html
+	model = Task
+	fields = '__all__' #fires all the modelForms
+	success_url = reverse_lazy('tasks') #after success re-directs to url 'tasks'
+
+class TaskUpdate(LoginRequiredMixin, UpdateView): #by default looks for templates/base/task_form.html
+	model = Task
+	fields = '__all__' #fires all the modelForms
+	success_url = reverse_lazy('tasks') #after success re-directs to url 'tasks'
+
+class TaskDelete(LoginRequiredMixin, DeleteView):
+	model = Task
+	context_object_name = 'task'
+	success_url = reverse_lazy('tasks')
+
+
+
+
+
+
+
+
+2) base/login.html looks like
+
+<h1>Login</h1>
+
+<form action="" method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="login">
+</form>
+
+
+
+
+
+
+
+
+3) urls.py looks like
+
+from django.urls import path
+from .views import CustomLoginView, TaskList, TaskDetail, TaskCreate, TaskUpdate, TaskDelete
+
+from django.contrib.auth.views import LogoutView
+
+urlpatterns = [
+	path('login/', CustomLoginView.as_view(),name='login'),
+	path('logout/', LogoutView.as_view(next_page='login'),name='logout'),
+	path('', TaskList.as_view(), name='tasks'),
+	path('task/<int:pk>/',TaskDetail.as_view(),name='task'),
+	path('create-task/',TaskCreate.as_view(),name='create-task'),
+	path('update-task/<int:pk>',TaskUpdate.as_view(),name='update-task'),
+	path('delete-task/<int:pk>',TaskDelete.as_view(),name='delete-task'),
+	
+]
+
+
+
+
+
+
+4) add to /todo_list/settings.py
+
+LOGIN_URL = 'login'
+
+
+
+
+
+
+5) task_list.html looks like 
+
+
+{% if request.user.is_authenticated %}
+	<p>{{ request.user }}</p>
+	<a href="{% url 'logout' %}">Logout</a>
+{% else %}
+	<a href="{% url 'login' %}">Login</a>
+{% endif %}
+
+<hr>
+<h1>My To do List</h1>
+
+<a href="{% url 'create-task' %}">Add Task</a>
+
+<table>
+	<tr>
+		<th>Item</th>
+		<th></th>
+		<th></th>
+		<th></th>
+	</tr>
+	{% for task in object_list %}
+		<tr>
+			<td>{{task.title}}</td>
+			<td><a href="{% url 'task' task.id %}">View</td>
+			<td><a href="{% url 'update-task' task.id %}">Edit</td>
+			<td><a href="{% url 'delete-task' task.id %}">Delete</td>
+		</tr>
+		{% empty %}
+		<h3>No items in the list</h3>
+	{% endfor %}
+</table>
