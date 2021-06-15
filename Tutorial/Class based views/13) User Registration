@@ -1,0 +1,49 @@
+1) views.py
+
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import login
+from django.views.generic.edit import FormView
+
+class RegisterPage(FormView):
+	template_name = 'base/register.html'
+	form_class = UserCreationForm
+	// redirect_authenticated_user = True // This is not working so we override
+	success_url = reverse_lazy('tasks')
+
+	def form_valid(self, form):
+		user = form.save()
+		if user is not None:
+			login(self.request, user)
+		return super(RegisterPage, self).form_valid(form)
+    
+    def get(self, *args, **kwargs): //This restricts if we goto register page when logged on
+		if self.request.user.is_authenticated:
+			return redirect('tasks')
+		return super(RegisterPage, self).get(*args,**kwargs)
+
+
+2) urls.py
+
+from django.urls import path
+from .views import CustomLoginView, RegisterPage, TaskList, TaskDetail, TaskCreate, TaskUpdate, TaskDelete
+
+from django.contrib.auth.views import LogoutView
+
+urlpatterns = [
+	path('login/', CustomLoginView.as_view(),name='login'),
+	path('logout/', LogoutView.as_view(next_page='login'),name='logout'),
+	path('register/',RegisterPage.as_view(),name='register'),
+]
+
+
+3) base/register.html
+
+<h3>Register</h3>
+
+<form method="POST" action="">
+	{% csrf_token %}
+	{{form.as_p}}
+	<input type="submit" value="Register">
+</form>
+
+<p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
